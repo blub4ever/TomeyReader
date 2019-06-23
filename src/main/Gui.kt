@@ -12,7 +12,13 @@ import javafx.stage.Stage
 import java.io.File
 
 class Gui : Application() {
-    private var readSettings = ReadSettings()
+
+    companion object {
+        @JvmStatic
+        var ReadSettings: ReadSettings = ReadSettings()
+    }
+
+
     private lateinit var sourceFolder: CheckBox
     private lateinit var sourceExtension: TextField
     private lateinit var fileCount: Label
@@ -25,34 +31,32 @@ class Gui : Application() {
     private lateinit var autoSubDir: CheckBox
     private lateinit var postProcess: CheckBox
     private lateinit var postProcessCommand: TextField
-    private lateinit var progressBar : ProgressBar
+    private lateinit var progressBar: ProgressBar
 
     var autoMode = true
 
-    fun startGui(readSettings: ReadSettings) {
-        this.readSettings = readSettings
+    fun startGui() {
         Application.launch()
     }
 
     override fun start(stage: Stage) {
-
         val box = VBox()
         box.padding = Insets(5.0, 5.0, 5.0, 5.0)
 
         sourceFolder = CheckBox()
         sourceFolder.text = "SourceFolder"
-        sourceFolder.isSelected = readSettings.sourceIsFolder
+        sourceFolder.isSelected = Gui.ReadSettings.sourceIsFolder
         sourceFolder.selectedProperty().addListener { observableValue, old, new ->
-            readSettings.sourceIsFolder = new
+            Gui.ReadSettings.sourceIsFolder = new
             sourceExtension.isDisable = !new
         }
 
         sourceExtension = TextField()
-        sourceExtension.text = this.readSettings.sourceFileExtension
-        sourceExtension.isDisable = !readSettings.sourceIsFolder
+        sourceExtension.text = Gui.ReadSettings.sourceFileExtension
+        sourceExtension.isDisable = !Gui.ReadSettings.sourceIsFolder
         sourceExtension.textProperty().addListener { observableValue, old, newValue ->
             sourceExtension.text = newValue
-            readSettings.sourceFileExtension = newValue
+            Gui.ReadSettings.sourceFileExtension = newValue
         }
 
         var hBox = HBox()
@@ -70,28 +74,28 @@ class Gui : Application() {
         val fileBtn = Button("Select File")
         fileBtn.setOnAction {
             val file =
-                if (!readSettings.sourceIsFolder) fileChooser.showOpenDialog(stage) else sourceChosser.showDialog(stage)
+                if (!Gui.ReadSettings.sourceIsFolder) fileChooser.showOpenDialog(stage) else sourceChosser.showDialog(stage)
             if (file != null) {
-                fileLabel.text = if (file != null) file.absolutePath else null
+                fileLabel.text = file.absolutePath
 
-                val targetFolder : File
-                if (!readSettings.sourceIsFolder) {
-                    readSettings.sourceFile = file
+                val targetFolder: File
+                if (!Gui.ReadSettings.sourceIsFolder) {
+                    Gui.ReadSettings.sourceFile = file
                     targetFolder = file.parentFile
                     fileCount.text = ""
                 } else {
-                    readSettings.sourceFolder = file
+                    Gui.ReadSettings.sourceFolder = file
                     targetFolder = file
-                   val count = file.listFiles{ e ->
-                        e.name.toLowerCase().endsWith(readSettings.sourceFileExtension);
+                    val count = file.listFiles { e ->
+                        e.name.toLowerCase().endsWith(Gui.ReadSettings.sourceFileExtension);
                     }.size
 
                     fileCount.text = "File count $count"
                 }
 
-                if (targetFolder.isDirectory && readSettings.targetFolder.path == "") {
+                if (targetFolder.isDirectory && Gui.ReadSettings.targetFolder.path == "") {
                     targetLabel.text = targetFolder.absolutePath
-                    readSettings.targetFolder = targetFolder
+                    Gui.ReadSettings.targetFolder = targetFolder
                 }
             }
         }
@@ -104,7 +108,7 @@ class Gui : Application() {
         hBox = HBox()
         hBox.padding = Insets(5.0, 5.0, 5.0, 5.0)
         hBox.spacing = 10.0
-        hBox.children.addAll(fileBtn, fileName, fileLabel,fileCount)
+        hBox.children.addAll(fileBtn, fileName, fileLabel, fileCount)
         box.children.add(hBox)
 
         val chooser = DirectoryChooser()
@@ -115,7 +119,7 @@ class Gui : Application() {
             val target = chooser.showDialog(stage)
             if (target != null) {
                 targetLabel.text = if (target != null) target.absolutePath else null
-                readSettings.targetFolder = target
+                Gui.ReadSettings.targetFolder = target
             }
         }
 
@@ -131,9 +135,9 @@ class Gui : Application() {
 
         autoSubDir = CheckBox()
         autoSubDir.text = "Subfolder erstellen"
-        autoSubDir.isSelected = this.readSettings.autoSubDir
+        autoSubDir.isSelected = Gui.ReadSettings.autoSubDir
         autoSubDir.selectedProperty().addListener { observableValue, old, new ->
-            readSettings.autoSubDir = new
+            Gui.ReadSettings.autoSubDir = new
         }
 
         hBox = HBox()
@@ -151,7 +155,7 @@ class Gui : Application() {
             widthInput.isDisable = autoMode
             heightInput.isDisable = autoMode
             bytesPerPixel.isDisable = autoMode
-            readSettings.autoMode = autoMode
+            Gui.ReadSettings.autoMode = autoMode
         }
 
         hBox = HBox()
@@ -164,12 +168,12 @@ class Gui : Application() {
         offsetLAbel.prefWidth = 100.0;
 
         offsetInput = TextField()
-        offsetInput.text = readSettings.manualOffset.toString()
+        offsetInput.text = Gui.ReadSettings.manualOffset.toString()
         offsetInput.isDisable = autoMode
         offsetInput.textProperty().addListener { observableValue, old, newValue ->
             if (newValue.matches(Regex("\\d"))) {
                 offsetInput.text = newValue.replace("[^\\d]", "")
-                readSettings.manualOffset = offsetInput.text.toLong()
+                Gui.ReadSettings.manualOffset = offsetInput.text.toLong()
             }
         }
 
@@ -183,12 +187,12 @@ class Gui : Application() {
         widthRender.prefWidth = 100.0;
 
         widthInput = TextField()
-        widthInput.text = this.readSettings.x.toString()
+        widthInput.text = Gui.ReadSettings.x.toString()
         widthInput.isDisable = this.autoMode
         widthInput.textProperty().addListener { observableValue, old, newValue ->
             if (newValue.matches(Regex("\\d"))) {
                 widthInput.text = newValue.replace("[^\\d]", "")
-                readSettings.x = widthInput.text.toInt()
+                Gui.ReadSettings.x = widthInput.text.toInt()
             }
         }
 
@@ -202,12 +206,12 @@ class Gui : Application() {
         heightLabel.prefWidth = 100.0;
 
         heightInput = TextField()
-        heightInput.text = this.readSettings.y.toString()
+        heightInput.text = Gui.ReadSettings.y.toString()
         heightInput.isDisable = this.autoMode
         heightInput.textProperty().addListener { observableValue, old, newValue ->
             if (newValue.matches(Regex("\\d"))) {
                 heightInput.text = newValue.replace("[^\\d]", "")
-                readSettings.y = heightInput.text.toInt()
+                Gui.ReadSettings.y = heightInput.text.toInt()
             }
         }
 
@@ -221,36 +225,36 @@ class Gui : Application() {
         bytesPerPixLAbel.prefWidth = 100.0;
 
         bytesPerPixel = TextField()
-        bytesPerPixel.text = this.readSettings.bytesPerPixel.toString()
+        bytesPerPixel.text = Gui.ReadSettings.bytesPerPixel.toString()
         bytesPerPixel.isDisable = this.autoMode
         bytesPerPixel.textProperty().addListener { observableValue, old, newValue ->
             if (newValue.matches(Regex("\\d"))) {
                 bytesPerPixel.text = newValue.replace("[^\\d]", "")
-                readSettings.bytesPerPixel = bytesPerPixel.text.toInt()
+                Gui.ReadSettings.bytesPerPixel = bytesPerPixel.text.toInt()
             }
         }
 
         hBox = HBox()
         hBox.padding = Insets(5.0, 5.0, 5.0, 5.0)
         hBox.spacing = 10.0
-        hBox.children.addAll(bytesPerPixLAbel,bytesPerPixel)
+        hBox.children.addAll(bytesPerPixLAbel, bytesPerPixel)
         box.children.add(hBox)
 
         postProcess = CheckBox()
         postProcess.text = "Post Process"
-        postProcess.isSelected = readSettings.postProcess
+        postProcess.isSelected = Gui.ReadSettings.postProcess
         postProcess.selectedProperty().addListener { observableValue, old, new ->
-            readSettings.postProcess = new
+            Gui.ReadSettings.postProcess = new
             postProcessCommand.isDisable = !new
         }
 
         postProcessCommand = TextField()
         postProcessCommand.minWidth = 300.0
-        postProcessCommand.text = this.readSettings.postProcessCommand
-        postProcessCommand.isDisable = !readSettings.postProcess
+        postProcessCommand.text = Gui.ReadSettings.postProcessCommand
+        postProcessCommand.isDisable = !Gui.ReadSettings.postProcess
         postProcessCommand.textProperty().addListener { observableValue, old, newValue ->
             postProcessCommand.text = newValue
-            readSettings.postProcessCommand = newValue
+            Gui.ReadSettings.postProcessCommand = newValue
         }
 
         hBox = HBox()
@@ -262,8 +266,8 @@ class Gui : Application() {
         val drawBtn = Button("Export")
         drawBtn.setOnAction { e ->
             val bitReader = BitReader()
-            if (bitReader.validate(readSettings)) {
-                bitReader.readTo(readSettings)
+            if (bitReader.validate(Gui.ReadSettings)) {
+                bitReader.readTo(Gui.ReadSettings)
             }
         }
 

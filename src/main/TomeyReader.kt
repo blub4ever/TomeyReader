@@ -7,7 +7,6 @@ class TomeyReader {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            System.out.println("current dir = " + System.getProperty("user.dir"));
             val readSettings = ReadSettings()
             var startGui = false
             var postProcess = false
@@ -133,8 +132,8 @@ class TomeyReader {
 
             readSettings.postProcess = postProcess
 
-            if (startGui) {
-                Gui().startGui(readSettings)
+            if (startGui ||c == 0) {
+                Gui.ReadSettings = readSettings                Gui().startGui()
             } else {
                 val bitReader = BitReader()
                 if (bitReader.validate(readSettings)) {
